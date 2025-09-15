@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     environment {
-        PROJECT_ID = "second-project-gar" 
-        REGION = "us-central1" 
-        REPO = "my-docker-repo" 
+        AWS_REGION = "us-east-1"                    // change to your AWS region
+        AWS_ACCOUNT_ID = "<your_aws_account_id>"    // e.g., 123456789012
+        REPO = "my-docker-repo"                     // must exist in ECR
         IMAGE = "hanu-python-app"
-        GAR_IMAGE = "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/${IMAGE}"
+        ECR_IMAGE = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO}/${IMAGE}"
     }
 
     stages {
@@ -16,34 +16,35 @@ pipeline {
             }
         }
 
-        stage('Auth with GCP') {
+        stage('Auth with AWS ECR') {
             steps {
-                
-                    sh '''
-                        gcloud config set project $PROJECT_ID
-                    '''
+                script {
+                    // Authenticate Docker with ECR using IAM role (no access keys required)
+                    sh """
+                        aws ecr get-login-password --region ${AWS_REGION} \
+                          | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
+                    """
                 }
-            
+            }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
                     sh """
-                        docker build -t ${GAR_IMAGE}:${BUILD_NUMBER} .
+                        docker build -t ${ECR_IMAGE}:${BUILD_NUMBER} .
                     """
                 }
             }
         }
 
-        stage('Push to Artifact Registry') {
+        stage('Push to AWS ECR') {
             steps {
                 script {
                     sh """
-                        gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
-                        docker push ${GAR_IMAGE}:${BUILD_NUMBER}
-                        docker tag ${GAR_IMAGE}:${BUILD_NUMBER} ${GAR_IMAGE}:latest
-                        docker push ${GAR_IMAGE}:latest
+                        docker push ${ECR_IMAGE}:${BUILD_NUMBER}
+                        docker tag ${ECR_IMAGE}:${BUILD_NUMBER} ${ECR_IMAGE}:latest
+                        docker push ${ECR_IMAGE}:latest
                     """
                 }
             }
@@ -52,10 +53,11 @@ pipeline {
 
     post {
         success {
-            echo "✅ Successfully built and pushed: ${GAR_IMAGE}:${BUILD_NUMBER}"
+            echo "✅ Successfully built and pushed: ${ECR_IMAGE}:${BUILD_NUMBER}"
         }
         failure {
             echo "❌ Build failed!"
         }
     }
 }
+
