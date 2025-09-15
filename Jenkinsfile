@@ -3,9 +3,9 @@ pipeline {
 
     environment {
         AWS_REGION = "us-east-1"                    // change to your AWS region
-        AWS_ACCOUNT_ID = "<your_aws_account_id>"    // e.g., 123456789012
-        REPO = "my-docker-repo"                     // must exist in ECR
-        IMAGE = "hanu-python-app"
+        AWS_ACCOUNT_ID = "813168483484"    // e.g., 123456789012
+        REPO = "python_repo"                     // must exist in ECR
+        IMAGE = "python"
         ECR_IMAGE = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO}/${IMAGE}"
     }
 
