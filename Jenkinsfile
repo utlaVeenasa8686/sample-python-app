@@ -6,7 +6,7 @@ pipeline {
         AWS_ACCOUNT_ID = "813168483484"    // e.g., 123456789012
         REPO = "python_repo"                     // must exist in ECR
         IMAGE = "python"
-        ECR_IMAGE = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO}/${IMAGE}"
+        ECR_IMAGE = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO}"
     }
 
     stages {
