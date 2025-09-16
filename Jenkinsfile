@@ -12,7 +12,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/veenasa/sample-python-app.git'
+                git branch: 'main', url: 'https://github.com/utlaVeenasa8686/sample-python-app.git'
             }
         }
 
